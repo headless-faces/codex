@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yorik — Combat Codex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Spline+Sans+Mono:wght@400;500;600&display=swap">
+<style>
+  .backlink {
+    position: fixed; top: 18px; left: 18px; z-index: 50;
+    font-family: "Spline Sans Mono", monospace; font-size: 12px; letter-spacing: 0.14em;
+    text-transform: uppercase; text-decoration: none; color: var(--ink-mute, #8a8f98);
+    border: 1px solid var(--line, rgba(255,255,255,0.12)); border-radius: 999px;
+    padding: 7px 14px; background: rgba(0,0,0,0.25); transition: color .2s, border-color .2s;
+  }
+  .backlink:hover { color: var(--ink, #e8e8ea); border-color: var(--gold, #c8a24a); }
+
+  :root {
+    /* gunmetal — grave, near-neutral cool base */
+    --bg:        oklch(0.150 0.010 250);
+    --bg-2:      oklch(0.128 0.009 252);
+    --card:      oklch(0.193 0.011 250);
+    --card-top:  oklch(0.222 0.012 248);
+    --line:      oklch(1 0 0 / 0.085);
+    --line-soft: oklch(1 0 0 / 0.05);
+    --ink:       oklch(0.93 0.006 250);
+    --ink-soft:  oklch(0.72 0.010 248);
+    --ink-mute:  oklch(0.56 0.010 246);
+
+    /* the Hammers — gunmetal & oxblood; steel-silver brand, oxblood, steel-blue, tarnished bronze */
+    --gold:       oklch(0.78 0.012 245);
+    --gold-dim:   oklch(0.64 0.012 245);
+    --garnet:     oklch(0.56 0.125 27);
+    --garnet-dim: oklch(0.46 0.105 27);
+    --azure:      oklch(0.68 0.045 245);
+    --azure-dim:  oklch(0.56 0.040 245);
+    --steel:      oklch(0.62 0.050 72);
+    --steel-dim:  oklch(0.52 0.045 70);
+    --stone:      oklch(0.70 0.008 250);
+
+    --r: 4px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background:
+      radial-gradient(1100px 560px at 50% -10%, oklch(0.32 0.02 250 / 0.45), transparent 60%),
+      radial-gradient(960px 540px at 50% 112%, oklch(0.38 0.10 28 / 0.20), transparent 62%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+    background-attachment: fixed;
+    color: var(--ink);
+    font-family: "EB Garamond", Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    position: relative;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+
+  .wrap {
+    position: relative; z-index: 1;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: clamp(28px, 6vw, 72px) clamp(18px, 4vw, 44px) 88px;
+  }
+
+  /* ---------- Masthead ---------- */
+  .mast { text-align: center; margin-bottom: clamp(26px, 4vw, 42px); }
+  .eyebrow {
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 12px; font-weight: 500;
+    letter-spacing: 0.42em; text-transform: uppercase;
+    color: var(--garnet);
+    margin: 0 0 18px;
+    padding-left: 0.42em;
+  }
+  .title {
+    font-family: "Cinzel", serif;
+    font-weight: 700;
+    font-size: clamp(46px, 11vw, 112px);
+    line-height: 1.0;
+    letter-spacing: 0.015em;
+    margin: 0;
+    color: var(--gold);
+    background: linear-gradient(180deg, oklch(0.93 0.008 245) 0%, var(--gold) 52%, var(--gold-dim) 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 5px 22px oklch(0.20 0.02 250 / 0.55));
+  }
+  .rule {
+    display: flex; align-items: center; justify-content: center;
+    gap: 16px; margin: 22px auto 0; max-width: 380px;
+    color: var(--gold-dim);
+  }
+  .rule::before, .rule::after {
+    content: ""; height: 1px; flex: 1;
+    background: linear-gradient(90deg, transparent, oklch(0.50 0.10 28 / 0.55), transparent);
+  }
+  .rune { width: 8px; height: 8px; background: var(--gold); transform: rotate(45deg); box-shadow: 0 0 12px var(--gold); }
+  .holy { width: 34px; height: 34px; flex: none; color: oklch(0.80 0.010 245); filter: drop-shadow(0 2px 5px oklch(0.08 0.01 250 / 0.7)); }
+  .clan {
+    font-family: "Cinzel", serif; font-weight: 600;
+    font-size: clamp(11.5px, 1.5vw, 13.5px); letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--gold-dim); margin: 13px 0 0;
+  }
+  .epigraph {
+    margin: 22px auto 0; max-width: 560px;
+    color: var(--ink); font-size: clamp(17px, 2.4vw, 20px);
+    font-style: italic; line-height: 1.5; text-wrap: pretty;
+  }
+  .attribution {
+    margin: 11px auto 0;
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 10.5px; letter-spacing: 0.26em; text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+  .hint {
+    margin: 16px auto 0;
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .stats {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+    margin: 22px auto 0;
+  }
+  .stat {
+    display: inline-flex; align-items: baseline; gap: 9px;
+    font-family: "Spline Sans Mono", monospace; white-space: nowrap;
+    border: 1px solid var(--line);
+    background: oklch(0.19 0.013 255 / 0.6);
+    border-radius: 999px; padding: 8px 16px;
+  }
+  .stat .k {
+    font-size: 10.5px; font-weight: 500; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--ink-mute);
+  }
+  .stat .v { font-size: 14px; font-weight: 600; letter-spacing: 0.04em; color: var(--gold); }
+
+  /* ---------- Filter bar ---------- */
+  .controls { display: flex; justify-content: center; margin: clamp(26px, 4vw, 40px) 0 clamp(22px, 3vw, 34px); }
+  .segmented {
+    display: inline-flex; flex-wrap: wrap; justify-content: center;
+    background: oklch(0.19 0.013 255 / 0.7);
+    border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; gap: 4px;
+    backdrop-filter: blur(6px);
+  }
+  .seg {
+    appearance: none; border: 0; cursor: pointer;
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 12.5px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-mute); background: transparent;
+    padding: 9px 20px; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 9px;
+    transition: color .2s, background .2s;
+  }
+  .seg .n { font-size: 10.5px; opacity: 0.6; border-left: 1px solid currentColor; padding-left: 8px; }
+  .seg:hover { color: var(--ink-soft); }
+  .seg[aria-pressed="true"] { color: var(--ink); background: oklch(0.27 0.02 255); }
+  .seg[data-cat="rites"][aria-pressed="true"]   { background: oklch(0.30 0.04 245); color: oklch(0.90 0.03 245); }
+  .seg[data-cat="wrath"][aria-pressed="true"]    { background: oklch(0.32 0.10 28); color: oklch(0.92 0.07 28); }
+  .seg[data-cat="bulwark"][aria-pressed="true"]  { background: oklch(0.30 0.045 72); color: oklch(0.90 0.05 75); }
+
+  /* ---------- Sections ---------- */
+  .section { margin-top: 8px; }
+  .section[hidden] { display: none; }
+  .section__head { display: flex; align-items: baseline; gap: 14px; margin: 30px 0 16px; }
+  .section__title {
+    font-family: "Cinzel", serif; font-weight: 700;
+    font-size: 15px; letter-spacing: 0.22em; text-transform: uppercase; margin: 0;
+  }
+  .section--rites .section__title   { color: var(--azure); }
+  .section--wrath .section__title   { color: var(--garnet); }
+  .section--bulwark .section__title { color: var(--steel); }
+  .section__meta {
+    font-family: "Spline Sans Mono", monospace; font-size: 11px;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-mute);
+  }
+  .section__line { flex: 1; height: 1px; background: var(--line-soft); }
+
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+  /* ---------- Action groups ---------- */
+  .group { margin-top: 24px; }
+  .group:first-of-type { margin-top: 4px; }
+  .group__head { display: flex; align-items: center; gap: 13px; margin: 0 0 13px; }
+  .group__tag {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ink-soft); white-space: nowrap;
+  }
+  .group__tag .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--stone); box-shadow: 0 0 8px currentColor; }
+  .group__tag[data-econ="action"]   .dot { background: var(--garnet); }
+  .group__tag[data-econ="bonus"]    .dot { background: var(--gold); }
+  .group__tag[data-econ="reaction"] .dot { background: var(--azure); }
+  .group__tag[data-econ="passive"]  .dot { background: var(--stone); }
+  .group__tag[data-econ="special"]  .dot { background: oklch(0.68 0.045 245); }
+  .group__count { font-size: 10px; opacity: 0.55; letter-spacing: 0.1em; }
+  .group__line { flex: 1; height: 1px; background: var(--line-soft); }
+
+  /* ---------- Card ---------- */
+  .card {
+    position: relative;
+    background: linear-gradient(180deg, var(--card-top), var(--card));
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 20px 22px 18px;
+    cursor: pointer; overflow: hidden;
+    transition: border-color .22s, transform .22s, box-shadow .22s;
+  }
+  .card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); opacity: 0.85; }
+  .card::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0;
+    background: radial-gradient(420px 180px at 0% 0%, var(--glow), transparent 70%);
+    transition: opacity .25s;
+  }
+  .card:hover { transform: translateY(-2px); border-color: var(--accent-soft); box-shadow: 0 14px 34px oklch(0.05 0.02 255 / 0.5); }
+  .card:hover::after { opacity: 0.5; }
+  .card.open { border-color: var(--accent-soft); }
+  .card.open::after { opacity: 0.7; }
+  .card--rites   { --accent: var(--azure-dim); --accent-soft: oklch(0.58 0.045 245 / 0.5); --glow: oklch(0.52 0.05 245 / 0.14); }
+  .card--wrath   { --accent: var(--garnet); --accent-soft: oklch(0.54 0.11 27 / 0.5); --glow: oklch(0.50 0.12 27 / 0.16); }
+  .card--bulwark { --accent: var(--steel-dim); --accent-soft: oklch(0.56 0.05 72 / 0.5); --glow: oklch(0.52 0.055 72 / 0.14); }
+  .card--cmd     { --accent: var(--steel-dim); --accent-soft: oklch(0.56 0.05 72 / 0.5); --glow: oklch(0.52 0.055 72 / 0.14); }
+
+  .act {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-soft);
+    border: 1px solid var(--line); border-radius: 999px;
+    padding: 5px 12px; background: oklch(0.17 0.012 255 / 0.6); white-space: nowrap;
+  }
+  .act .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--stone); }
+  .act[data-econ="bonus"]   .dot { background: var(--gold);   box-shadow: 0 0 8px var(--gold); }
+  .act[data-econ="free"]    .dot { background: var(--azure);  box-shadow: 0 0 8px var(--azure); }
+  .act[data-econ="special"] .dot { background: var(--garnet); box-shadow: 0 0 8px var(--garnet); }
+
+  .card__top { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .tag {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-soft);
+    border: 1px solid var(--line); border-radius: 999px;
+    padding: 5px 11px; background: oklch(0.17 0.012 255 / 0.6); white-space: nowrap;
+  }
+  .use {
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid oklch(0.58 0.012 245 / 0.5);
+    border-radius: 999px; padding: 5px 10px; white-space: nowrap;
+  }
+  .dc {
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--azure);
+    border: 1px solid oklch(0.55 0.04 245 / 0.5); border-radius: 999px; padding: 5px 10px; white-space: nowrap;
+  }
+  .card__name {
+    font-family: "Cinzel", serif; font-weight: 600;
+    font-size: 22px; line-height: 1.12; letter-spacing: 0.005em;
+    margin: 0 0 4px; color: var(--ink);
+  }
+  .card__src {
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-mute); margin: 0;
+  }
+  .card__teaser { margin: 13px 0 0; color: var(--ink-soft); font-size: 15.5px; line-height: 1.5; transition: opacity .2s; }
+
+  .card__body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .32s ease; }
+  .card__body > div { overflow: hidden; }
+  .card.open .card__body { grid-template-rows: 1fr; }
+  .card.open .card__teaser { display: none; }
+  .card__full { margin: 13px 0 0; color: var(--ink); font-size: 15.5px; line-height: 1.58; }
+
+  .chips { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0 2px; padding: 0; }
+  .chips li {
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 11.5px; letter-spacing: 0.04em; color: var(--ink);
+    background: oklch(0.17 0.012 255 / 0.7); border: 1px solid var(--line);
+    border-radius: var(--r); padding: 5px 10px;
+  }
+  .card--wrath .chips li { color: oklch(0.82 0.10 28); border-color: oklch(0.55 0.11 27 / 0.35); }
+  .card--rites .chips li { color: oklch(0.84 0.045 245); border-color: oklch(0.6 0.04 245 / 0.4); }
+  .card--bulwark .chips li { color: oklch(0.82 0.05 74); border-color: oklch(0.58 0.05 72 / 0.4); }
+
+  .placeholder { color: var(--ink-mute); font-style: italic; }
+
+  .card__more {
+    display: inline-flex; align-items: center; gap: 7px; margin-top: 14px;
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-mute); transition: color .2s;
+  }
+  .card:hover .card__more, .card.open .card__more .label { color: var(--accent); }
+  .chev { width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); transition: transform .3s; margin-bottom: 2px; }
+  .card.open .chev { transform: rotate(-135deg); margin-bottom: -2px; }
+
+  footer {
+    text-align: center; margin-top: 54px;
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-mute);
+  }
+
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+
+  /* ---------- Tabs (segmented) ---------- */
+  .controls { display: flex; justify-content: center; margin: 0 0 clamp(22px, 3vw, 30px); }
+  .segmented {
+    display: inline-flex; flex-wrap: wrap; justify-content: center;
+    background: oklch(0.18 0.012 250 / 0.7);
+    border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; gap: 4px;
+    backdrop-filter: blur(6px);
+  }
+  .seg {
+    appearance: none; border: 0; cursor: pointer; background: none;
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-mute); padding: 9px 18px; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 9px;
+    transition: color .2s, background .2s;
+  }
+  .seg .n { font-size: 11px; opacity: 0.7; border-left: 1px solid currentColor; padding-left: 9px; }
+  .seg:hover { color: var(--ink-soft); }
+  .seg[aria-pressed="true"] { color: oklch(0.18 0.02 90); background: var(--gold); }
+  .tab__empty {
+    font-family: "Spline Sans Mono", monospace; font-size: 12px; letter-spacing: 0.06em;
+    color: var(--ink-mute); text-align: center; padding: 40px 0;
+  }
+  .section[data-tab="locked"]   .card:not(.locked) { display: none; }
+  .section[data-tab="unlocked"] .card.locked       { display: none; }
+
+  /* ---------- Lock overlay ---------- */
+  .card.locked { cursor: default; }
+  .card.locked > :not(.lock) { filter: blur(8px); opacity: 0.22; pointer-events: none; user-select: none; }
+  .lock {
+    position: absolute; inset: 0; z-index: 6;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px;
+    padding: 20px; text-align: center;
+    background: oklch(0.150 0.010 250 / 0.78);
+    backdrop-filter: blur(2px); border-radius: var(--r);
+  }
+  .card:not(.locked) .lock { display: none; }
+  .lock__icon { width: 34px; height: 34px; color: var(--gold); filter: drop-shadow(0 2px 6px oklch(0.08 0.01 250 / 0.7)); transition: color .2s; }
+  .lock__input {
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 16px; letter-spacing: 0.34em; text-align: center;
+    width: 150px; padding: 11px 14px 11px 18px;
+    color: var(--ink); background: oklch(0.120 0.009 252);
+    border: 1px solid var(--line); border-radius: var(--r);
+    transition: border-color .2s;
+  }
+  .lock__input::placeholder { color: var(--ink-mute); letter-spacing: 0.2em; }
+  .lock__input:focus { outline: none; border-color: var(--accent-soft); }
+  .lock__hint {
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-mute);
+  }
+  .lock.bad .lock__input { border-color: var(--garnet); animation: lockShake .32s; }
+  .lock.bad .lock__icon { color: var(--garnet); }
+  .lock.bad .lock__hint { color: var(--garnet); }
+  @keyframes lockShake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-7px); } 40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); } 80% { transform: translateX(3px); }
+  }
+
+</style>
+</head>
+<body>
+  <a class="backlink" href="../../">← Roster</a>
+  <div class="wrap">
+    <header class="mast">
+      <p class="eyebrow">Combat Codex</p>
+      <h1 class="title">Yorik</h1>
+      <p class="clan">Commander · The Hammers</p>
+      <div class="rule"><svg class="holy" viewBox="0 0 64 64" aria-hidden="true">
+          <g transform="translate(32 33)" fill="currentColor">
+            <g transform="rotate(-27)">
+              <rect x="-9.5" y="-27" width="19" height="9.5" rx="2"></rect>
+              <rect x="-2.6" y="-21" width="5.2" height="42" rx="2.2"></rect>
+            </g>
+            <g transform="rotate(27)">
+              <rect x="-9.5" y="-27" width="19" height="9.5" rx="2"></rect>
+              <rect x="-2.6" y="-21" width="5.2" height="42" rx="2.2"></rect>
+            </g>
+          </g>
+        </svg></div>
+      <p class="epigraph">“We are the hammer. Let the faithless be the anvil.”</p>
+      <p class="hint">Tap any card to unfurl its full ruling</p>
+    </header>
+
+    <section class="section" data-tab="unlocked">
+      <div class="controls">
+        <div class="segmented" role="group" aria-label="Filter by lock state">
+          <button class="seg" data-tab-btn="unlocked" aria-pressed="true" type="button">Unlocked <span class="n" data-count="unlocked">0</span></button>
+          <button class="seg" data-tab-btn="locked" aria-pressed="false" type="button">Locked <span class="n" data-count="locked">0</span></button>
+        </div>
+      </div>
+      <p class="tab__empty" data-empty="locked" hidden="">Every command has been unlocked.</p>
+      <p class="tab__empty" data-empty="unlocked" hidden="">No commands unlocked yet — switch to Locked and enter the password on a card.</p>
+      <div class="grid" id="grid"></div>
+    </section>
+
+    <footer>Yorik · <span id="abilCount">0</span> abilities · Order of the Hammers</footer>
+  </div>
+
+  <script src="abilities.js"></script>
+  <script>
+    var LOCK_SVG = `<svg class="lock__icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 10V7a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                <rect x="4.5" y="10" width="15" height="11" rx="2.2" fill="currentColor"></rect>
+                <circle cx="12" cy="15" r="1.6" fill="var(--bg)"></circle>
+                <rect x="11.2" y="15" width="1.6" height="4" rx="0.8" fill="var(--bg)"></rect>
+              </svg>`;
+
+    function slug(s){ return 'lk-' + String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+    function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function cardHTML(a){
+      var cat = a.cat || 'cmd';
+      var id  = slug(a.name);
+      var lockedCls = a.locked ? ' locked' : '';
+      return '<article class="card card--'+cat+lockedCls+'" data-cat="'+cat+'" data-lock="'+id+'">'
+        +   '<div class="lock">' + LOCK_SVG
+        +     '<input class="lock__input" type="password" inputmode="numeric" maxlength="8" placeholder="\u2022 \u2022 \u2022" aria-label="Password to unlock" autocomplete="off">'
+        +     '<span class="lock__hint">Enter password to unlock</span>'
+        +   '</div>'
+        +   '<div class="card__top"><span class="act" data-econ="'+esc(a.econ)+'"><i class="dot"></i>'+esc(a.timing)+'</span><span class="use">'+esc(a.uses)+'</span></div>'
+        +   '<h3 class="card__name">'+esc(a.name)+'</h3>'
+        +   '<p class="card__src">'+esc(a.source)+'</p>'
+        +   '<p class="card__teaser">'+esc(a.teaser)+'</p>'
+        +   '<div class="card__body"><div><p class="card__full">'+(a.ruling||'')+'</p></div></div>'
+        +   '<span class="card__more"><span class="label">Details</span><i class="chev"></i></span>'
+        + '</article>';
+    }
+
+    var ABIL = window.YORIK_ABILITIES || [];
+    document.getElementById('grid').innerHTML = ABIL.map(cardHTML).join('');
+    document.getElementById('abilCount').textContent = ABIL.length;
+
+    /* ---- behaviour (password 159, tabs, expand, localStorage) ---- */
+    var PW = '159';
+    var KEY = 'yorik-unlocked';
+    var unlocked = {};
+    try { unlocked = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { unlocked = {}; }
+
+    var section = document.querySelector('.section');
+    var cards = Array.prototype.slice.call(document.querySelectorAll('.card'));
+
+    function refresh() {
+      var lockedN = 0, unlockedN = 0;
+      cards.forEach(function (c) { if (c.classList.contains('locked')) lockedN++; else unlockedN++; });
+      document.querySelector('[data-count="locked"]').textContent = lockedN;
+      document.querySelector('[data-count="unlocked"]').textContent = unlockedN;
+      var tab = section.getAttribute('data-tab');
+      document.querySelector('[data-empty="locked"]').hidden = !(tab === 'locked' && lockedN === 0);
+      document.querySelector('[data-empty="unlocked"]').hidden = !(tab === 'unlocked' && unlockedN === 0);
+    }
+
+    document.querySelectorAll('.seg').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.seg').forEach(function (b) { b.setAttribute('aria-pressed', String(b === btn)); });
+        section.setAttribute('data-tab', btn.getAttribute('data-tab-btn'));
+        refresh();
+      });
+    });
+
+    cards.forEach(function (card) {
+      var id = card.getAttribute('data-lock');
+      if (id && unlocked[id]) card.classList.remove('locked');
+
+      card.addEventListener('click', function (e) {
+        if (card.classList.contains('locked')) return;
+        if (e.target.closest('.lock')) return;
+        card.classList.toggle('open');
+      });
+
+      var lock = card.querySelector('.lock');
+      if (!lock) return;
+      var input = lock.querySelector('.lock__input');
+
+      function tryUnlock() {
+        if (input.value.trim() === PW) {
+          card.classList.remove('locked');
+          unlocked[id] = true;
+          try { localStorage.setItem(KEY, JSON.stringify(unlocked)); } catch (e) {}
+          refresh();
+          fbPush();
+        } else {
+          lock.classList.add('bad'); input.select();
+          setTimeout(function () { lock.classList.remove('bad'); }, 600);
+        }
+      }
+      input.addEventListener('click', function (e) { e.stopPropagation(); });
+      input.addEventListener('keydown', function (e) { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); tryUnlock(); } });
+      input.addEventListener('input', function () { if (input.value.trim() === PW) tryUnlock(); });
+    });
+
+    refresh();
+
+    /* ---- Firebase: shared unlock state across all devices ---- */
+    var firebaseConfig = {
+      apiKey: "AIzaSyBIKnm0FHWVtUgB3ygYzgPQVcI5d3w9Mx4",
+      authDomain: "headless-faces.firebaseapp.com",
+      databaseURL: "https://headless-faces-default-rtdb.firebaseio.com",
+      projectId: "headless-faces",
+      storageBucket: "headless-faces.firebasestorage.app",
+      messagingSenderId: "1020491419919",
+      appId: "1:1020491419919:web:8306a3559dfa8c0eadae7a"
+    };
+    var dbRef = null, fbSetFn = null;
+    function applyUnlock(id) {
+      var c = document.querySelector('.card[data-lock="' + id + '"]');
+      if (c) c.classList.remove('locked');
+    }
+    function fbPush() {
+      if (dbRef && fbSetFn) {
+        fbSetFn(dbRef, unlocked).catch(function (e) { console.warn('Firebase write failed', e); });
+      }
+    }
+    (function () {
+      Promise.all([
+        import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'),
+        import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js')
+      ]).then(function (m) {
+        var app = m[0].initializeApp(firebaseConfig);
+        var db = m[1].getDatabase(app);
+        dbRef = m[1].ref(db, 'yorik-unlocked');
+        fbSetFn = m[1].set;
+        m[1].onValue(dbRef, function (snap) {
+          var remote = snap.val();
+          if (!remote) {
+            // database empty: seed it from local unlocks if we have any
+            if (Object.keys(unlocked).length) fbSetFn(dbRef, unlocked);
+            return;
+          }
+          var changed = false;
+          Object.keys(remote).forEach(function (id) {
+            if (remote[id] && !unlocked[id]) { unlocked[id] = true; applyUnlock(id); changed = true; }
+          });
+          if (changed) {
+            try { localStorage.setItem(KEY, JSON.stringify(unlocked)); } catch (e) {}
+            refresh();
+          }
+        }, function (err) { console.warn('Firebase read failed (check database rules)', err); });
+      }).catch(function (e) { console.warn('Firebase unavailable, using local storage only', e); });
+    })();
+  </script>
+</body>
+</html>
